@@ -17,7 +17,7 @@ export async function POST(req: Request) {
         config: {
           responseModalities: ["Text", "Image"],
         },
-      });
+    });
 
     console.log(response);
 
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
         code: 0,
         message: "SUCCESS",
         data: {
-            img_url: "https://xxxx.xxx.com"
+            img_path: "https://xxxx.xxx.com"
         }
     });
 }

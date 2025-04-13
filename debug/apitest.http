@@ -8,5 +8,8 @@ POST {{baseUri}}/gen-wallpaper
 Content-Type: application/json
 
 {
-    "description": "a fat cat sleeping in farm"
+    "description": "a fat 30yo boy using computer and sitting on wooden floor in the bacolny"
 }
+
+### generate wallpaper list
+GET {{baseUri}}/gen-wallpapers
