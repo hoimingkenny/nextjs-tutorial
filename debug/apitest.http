@@ -1,0 +1,12 @@
+@baseUri=http://localhost:3000/api
+
+### test
+POST {{baseUri}}/test
+
+### generate wallpaper
+POST {{baseUri}}/gen-wallpaper
+Content-Type: application/json
+
+{
+    "description": "a fat cat sleeping in farm"
+}
