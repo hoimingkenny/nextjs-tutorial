@@ -1,13 +1,15 @@
 import Footer from "@/components/footer";
 import Header from "@/components/header";
-import Wallpaper from "@/components/wallpaper";
-import Image from "next/image";
+import Hero from "@/components/hero";
+import Wallpaper2 from "@/components/wallpaper2";
+
 
 export default function Home() {
   return (
     <div className="w-screen h-screen">
-      <Header />
-      <Wallpaper />
+      {/* <Header /> */}
+      <Hero />
+      <Wallpaper2 />
       <Footer />
     </div>
   );
