@@ -32,12 +32,7 @@ export default function ({ setWallpapers }: Props) {
     const { data } = await result.json();
 
     if (data) {
-      setWallpaper(wallpaper);
-      console.log("New wallpaper:", data);
-      
-      if (wallpaper) {
-        setWallpapers((wallpapers: Wallpaper[]) => [wallpaper, ...wallpapers])
-      }
+      setWallpapers((wallpapers: Wallpaper[]) => [data, ...wallpapers])
     }
   };
 
