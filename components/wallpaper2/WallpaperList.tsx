@@ -1,7 +1,6 @@
 "use client";
 
 import { Wallpaper } from "@/types/wallpaper";
-import { Dispatch, useState, useEffect, SetStateAction } from "react";
 import Image from 'next/image';
 
 
