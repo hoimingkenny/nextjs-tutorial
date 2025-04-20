@@ -20,7 +20,7 @@ export default async function () {
           return (
             <div key={v.id | idx} className="mx-4">              
               <h2 className="text-lg font-bold">{v.img_des}</h2>
-              <h3>{v.img_url}</h3>
+              <h3>{v.img_path}</h3>
             </div>
           )
         })};

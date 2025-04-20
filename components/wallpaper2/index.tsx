@@ -2,30 +2,18 @@
 
 
 import { Wallpaper } from "@/types/wallpaper";
-import { useEffect, useState } from "react";
-import WallpaperList from "../wallpaper/WallpaperList";
+import WallpaperList from "./WallpaperList";
+import { Dispatch, SetStateAction } from "react";
 
 
+interface Props {
+  wallpapers: Wallpaper[];
+}
 // client side trigger API
-export default function () {
-  // const [wallpapers, setWallpapers] = useState<Wallpaper[] | null>(null);
-  
-  // const fetchWallpapers = async function() {
-  //   const result = await fetch("http://localhost:3000/api/gen-wallpapers");
-  //   const { data } = await result.json();
-
-  //   if (data) {
-  //     setWallpapers(data);
-  //   }
-  // }
-
-  // useEffect(() => {
-  //   fetchWallpapers();
-  // }, []);
-
+export default function ({ wallpapers }: Props) {
   return (
     <section className="max-w-6xl mx-auto">
-      <WallpaperList />
+      <WallpaperList wallpapers={wallpapers} />
     </section>
   );
-}
+} 

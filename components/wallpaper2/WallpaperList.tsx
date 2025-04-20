@@ -1,26 +1,15 @@
 "use client";
 
 import { Wallpaper } from "@/types/wallpaper";
-import { useState, useEffect } from "react";
+import { Dispatch, useState, useEffect, SetStateAction } from "react";
 import Image from 'next/image';
 
 
-export default function () {
-  const [wallpapers, setWallpapers] = useState<Wallpaper[] | null>(null);
+interface Props {
+  wallpapers: Wallpaper[];
+}
 
-  const fetchWallpapers = async function () {
-    const result = await fetch("http://localhost:3000/api/gen-wallpapers");
-    const { data } = await result.json();
-
-    if (data) {
-      setWallpapers(data);
-    }
-  };
-
-  useEffect(() => {
-    fetchWallpapers();
-  }, []);
-
+export default function ({ wallpapers }: Props) {
   return (
     <div>
       <section>
@@ -29,13 +18,9 @@ export default function () {
           {/* Heading Container */}
           <div className="mb-8 text-center md:mb-12 ">
             {/* Heading */}
-            <h2 className="text-3xl font-bold md:text-5xl">
-              What our clients are saying
+            <h2 className="text-primary text-3xl font-bold md:text-5xl">
+              All Wallpapers
             </h2>
-            {/* Subeading */}
-            <p className="mt-4 text-gray-500 text-base">
-              Lorem ipsum dolor sit amet elit ut aliquam
-            </p>
           </div>
           {/* Contents */}
           <div className="mb-12 grid grid-cols-1 gap-5 sm:grid-cols-2 md:mb-16 md:grid-cols-3 md:gap-4 ">
@@ -46,7 +31,7 @@ export default function () {
                             <div className="mb-3 flex w-full items-center justify-between">
                                 <div className="flex items-center">
                                 <img
-                                    src="https://assets.website-files.com/6458c625291a94a195e6cf3a/64772e4ec124557640300fd8_Column.png"
+                                    src="/images/gemini-native-image-05.png"
                                     alt=""
                                     className="mr-4 inline-block h-8 w-8 rounded-full"
                                 />
@@ -54,7 +39,7 @@ export default function () {
                                 </div>
                             </div>
                             <Image
-                                src="/gemini-native-image.png"
+                                src={wallpapers.img_path}
                                 alt=""
                                 className="inline-block h-60 w-full rounded-md object-cover"
                                 width={500}

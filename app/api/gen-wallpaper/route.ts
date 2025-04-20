@@ -1,45 +1,100 @@
+import { Modality } from "@google/genai";
 import { getGoogleGenAI } from "@/app/service/geminiImagen";
 import * as fs from "node:fs";
+import path from "node:path";
 
+const IMAGE_DIR = path.join(process.cwd(), "public", "images");
+const BASE_FILE_NAME = "gemini-native-image";
+
+// Ensure the image directory exists
+if (!fs.existsSync(IMAGE_DIR)) {
+  fs.mkdirSync(IMAGE_DIR, { recursive: true });
+}
+
+// Function to get the next file number
+function getNextFileNumber() {
+  const files = fs.readdirSync(IMAGE_DIR);
+  const numbers = files
+    .filter((file) => file.startsWith(BASE_FILE_NAME) && file.endsWith(".png"))
+    .map((file) => {
+      const match = file.match(/gemini-native-image-(\d+)\.png/);
+      return match ? parseInt(match[1], 10) : 0;
+    });
+  const maxNumber = numbers.length ? Math.max(...numbers) : 0;
+  return maxNumber + 1;
+}
 
 export async function POST(req: Request) {
+  try {
     const { description } = await req.json();
+    if (!description) {
+      return Response.json({
+        code: 1,
+        message: "Description is required",
+      });
+    }
     console.log(description);
 
     const client = getGoogleGenAI();
-
     const contents = `Hi, can you create a 3d rendered image of ${description}`;
-    // console.log(contents);
 
     const response = await client.models.generateContent({
-        model: "gemini-2.0-flash-exp-image-generation",
-        contents: contents,
-        config: {
-          responseModalities: ["Text", "Image"],
-        },
+      // can only use in US
+      model: "gemini-2.0-flash-exp-image-generation",
+      contents: [{ parts: [{ text: contents }] }],
+      config: {
+        responseModalities: [Modality.TEXT, Modality.IMAGE],
+      },
     });
 
-    console.log(response);
-
-    console.log(response.candidates[0].content)
-    for (const part of response.candidates[0].content.parts) {
-    // Based on the part type, either show the text or save the image
-        if (part.text) {
-            console.log(part.text);
-        } else if (part.inlineData) {
-            console.log(part.inlineData)
-            const imageData = part.inlineData.data;
-            const buffer = Buffer.from(imageData, "base64");
-            fs.writeFileSync("gemini-native-image.png", buffer);
-            console.log("Image saved as gemini-native-image.png");
-        }
+    const candidate = response.candidates?.[0];
+    if (!candidate || !candidate.content || !candidate.content.parts) {
+      throw new Error("Invalid response from Gimini API");
     }
 
+    let imageData;
+    for (const part of candidate.content.parts) {
+      if (part.inlineData && part.inlineData.mimeType === "image/png") {
+        imageData = part.inlineData.data;
+        break;
+      }
+    }
+
+    if (!imageData) {
+      throw new Error("No image data found in response");
+    }
+
+    // Generate unique file name
+    const fileNumber = getNextFileNumber();
+    const fileName = `${BASE_FILE_NAME}-${fileNumber
+      .toString()
+      .padStart(2, "0")}.png`;
+    const filePath = path.join(IMAGE_DIR, fileName);
+
+    // Save the image
+    const buffer = Buffer.from(imageData, "base64");
+    fs.writeFileSync(filePath, buffer);
+    console.log(`Image saved as ${fileName}`);
+
+    // Return the public URL (adjust based on your hosting setup)
+    const imageUrl = `/images/${fileName}`;
+
     return Response.json({
-        code: 0,
-        message: "SUCCESS",
-        data: {
-            img_path: "https://xxxx.xxx.com"
-        }
+      code: 0,
+      message: "SUCCESS",
+      data: {
+        img_des: description,
+        img_path: imageUrl,
+      },
     });
+  } catch (error) {
+    console.error("Error:", error);
+    return Response.json(
+      {
+        code: 1,
+        message: "Failed to generate image",
+      },
+      { status: 400 }
+    );
+  }
 }
