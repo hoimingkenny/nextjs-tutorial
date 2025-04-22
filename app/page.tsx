@@ -13,7 +13,7 @@ export default function Home() {
   const [wallpapers, setWallpapers] = useState<Wallpaper[]>([]);
 
   const fetchWallpapers = async function () {
-    const result = await fetch("http://localhost:3000/api/gen-wallpapers");
+    const result = await fetch("/api/gen-wallpapers");
     const { data } = await result.json();
 
     if (data) {

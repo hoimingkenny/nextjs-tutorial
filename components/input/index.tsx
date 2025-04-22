@@ -24,7 +24,7 @@ export default function ({ setWallpapers }: Props) {
     };
 
     setLoading(true)
-    const result = await fetch("http://localhost:3000/api/gen-wallpaper", {
+    const result = await fetch("/api/gen-wallpaper", {
       method: "POST",
       body: JSON.stringify(params),
     });
@@ -32,12 +32,7 @@ export default function ({ setWallpapers }: Props) {
     const { data } = await result.json();
 
     if (data) {
-      setWallpaper(wallpaper);
-      console.log("New wallpaper:", data);
-      
-      if (wallpaper) {
-        setWallpapers((wallpapers: Wallpaper[]) => [wallpaper, ...wallpapers])
-      }
+      setWallpapers((wallpapers: Wallpaper[]) => [data, ...wallpapers])
     }
   };
 

@@ -3,7 +3,6 @@
 
 import { Wallpaper } from "@/types/wallpaper";
 import WallpaperList from "./WallpaperList";
-import { Dispatch, SetStateAction } from "react";
 
 
 interface Props {

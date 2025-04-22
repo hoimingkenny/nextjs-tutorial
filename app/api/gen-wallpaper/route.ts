@@ -1,5 +1,6 @@
 import { Modality } from "@google/genai";
 import { getGoogleGenAI } from "@/app/service/geminiImagen";
+import { uploadImage } from "@/lib/s3";
 import * as fs from "node:fs";
 import path from "node:path";
 
@@ -26,6 +27,8 @@ function getNextFileNumber() {
 
 export async function POST(req: Request) {
   try {
+    console.log("Generate image: /api/gen-wallpaper")
+
     const { description } = await req.json();
     if (!description) {
       return Response.json({
@@ -33,7 +36,7 @@ export async function POST(req: Request) {
         message: "Description is required",
       });
     }
-    console.log(description);
+    console.log(`Description: ${description}`);
 
     const client = getGoogleGenAI();
     const contents = `Hi, can you create a 3d rendered image of ${description}`;
@@ -71,20 +74,29 @@ export async function POST(req: Request) {
       .padStart(2, "0")}.png`;
     const filePath = path.join(IMAGE_DIR, fileName);
 
-    // Save the image
+    // Save the image locally
     const buffer = Buffer.from(imageData, "base64");
     fs.writeFileSync(filePath, buffer);
-    console.log(`Image saved as ${fileName}`);
 
     // Return the public URL (adjust based on your hosting setup)
-    const imageUrl = `/images/${fileName}`;
+    const imagePath = `/images/${fileName}`;
+
+    console.log(`Image saved as ${imagePath}`);
+
+    // upload to S3
+    const s3Img = await uploadImage(
+      fileName,
+      process.env.AWS_BUCKET || "ai-wallpaper-hoimingkenny",
+      `wallpapers/${fileName}`
+    );
 
     return Response.json({
       code: 0,
       message: "SUCCESS",
       data: {
         img_des: description,
-        img_path: imageUrl,
+        img_path: imagePath,
+        s3_location: s3Img.Location,
       },
     });
   } catch (error) {
