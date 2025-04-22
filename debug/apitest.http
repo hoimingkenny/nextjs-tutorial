@@ -1,4 +1,4 @@
-@baseUri=http://localhost:3000/api
+@baseUri=http://localhost:3001/api
 
 ### test
 POST {{baseUri}}/test
