@@ -5,7 +5,7 @@ export interface Wallpaper {
     img_url: string
     llm_name: string
     llm_params?: string
-    created_at: Date
+    created_at: string
 
     user_email?: string
 }
