@@ -84,11 +84,29 @@ export async function POST(req: Request) {
     console.log(`Image saved as ${imagePath}`);
 
     // upload to S3
-    const s3Img = await uploadImage(
-      fileName,
-      process.env.AWS_BUCKET || "ai-wallpaper-hoimingkenny",
-      `wallpapers/${fileName}`
-    );
+    const uploadS3 = process.env.UPLOAD_S3_SWITCH?.toLowerCase() === 'true';
+    const uploadSupabase = process.env.UPLOAD_SUPABASE_SWITCH?.toLowerCase() === 'true';
+
+    let s3Img: any;
+    console.log("UPLOAD_TO_S3: ", uploadS3);
+    if (uploadS3) {
+      s3Img = await uploadImage(
+        fileName,
+        process.env.AWS_BUCKET || "ai-wallpaper-hoimingkenny",
+        `wallpapers/${fileName}`
+      );
+    }
+    
+    // insert to supabase
+    console.log("UPLOAD_SUPABASE: ", uploadSupabase);
+    const wallpaper: Wallpaper = {
+      user_email: user_email,
+      img_description: description,
+      img_size: img_size,
+      img_url: s3Img.Location,
+      llm_name: llm_name,
+      created_at: created_at,
+    };
 
     return Response.json({
       code: 0,
