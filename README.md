@@ -23,6 +23,8 @@ bun dev
 	- https://thinkany.feishu.cn/docx/K4xvd40NEomnYNxn7W1cER9dnhf
 - page.tsx Explanation
 	- https://guui24rhwg.feishu.cn/docx/Evlmd0hB8oGRAjxgsrbcmfEAnxb
+- Git Source Code
+	- https://github.com/ai-1024/aiwallpaper-demo/blob/main/app/api/gen-wallpaper/route.ts
 
 ## Tool
 https://node-postgres.com/

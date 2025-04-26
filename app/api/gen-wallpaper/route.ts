@@ -3,6 +3,11 @@ import { getGoogleGenAI } from "@/app/service/geminiImagen";
 import { uploadImage } from "@/lib/s3";
 import * as fs from "node:fs";
 import path from "node:path";
+import { Wallpaper } from "@/types/wallpaper";
+import { insertWallpaper } from "@/models/wallpaper";
+import { currentUser } from "@clerk/nextjs/server";
+import { User } from "@/types/user";
+import { insertUser } from "@/models/user";
 
 const IMAGE_DIR = path.join(process.cwd(), "public", "images");
 const BASE_FILE_NAME = "gemini-native-image";
@@ -27,7 +32,26 @@ function getNextFileNumber() {
 
 export async function POST(req: Request) {
   try {
-    console.log("Generate image: /api/gen-wallpaper")
+    // to-do: check user auth
+    const user = await currentUser();
+    if (!user || !user.emailAddresses || user.emailAddresses.length === 0) {
+      return Response.json({
+        code: -2,
+        message: "User has not logged in",
+      });
+    }
+
+    const user_email = user.emailAddresses[0].emailAddress;
+    const nickname = user.firstName;
+    const avatarUrl = user.imageUrl;
+    const userInfo: User = {
+      email: user_email,
+      nickname: nickname || "",
+      avatar_url: avatarUrl,
+    };
+    await insertUser(userInfo);
+
+    console.log("Generate image: /api/gen-wallpaper");
 
     const { description } = await req.json();
     if (!description) {
@@ -41,9 +65,11 @@ export async function POST(req: Request) {
     const client = getGoogleGenAI();
     const contents = `Hi, can you create a 3d rendered image of ${description}`;
 
+    const modelName =
+      process.env.IMAGE_MODEL_NAME || "gemini-2.0-flash-exp-image-generation";
     const response = await client.models.generateContent({
       // can only use in US
-      model: "gemini-2.0-flash-exp-image-generation",
+      model: modelName,
       contents: [{ parts: [{ text: contents }] }],
       config: {
         responseModalities: [Modality.TEXT, Modality.IMAGE],
@@ -59,6 +85,7 @@ export async function POST(req: Request) {
     for (const part of candidate.content.parts) {
       if (part.inlineData && part.inlineData.mimeType === "image/png") {
         imageData = part.inlineData.data;
+        // console.log(part);
         break;
       }
     }
@@ -74,36 +101,56 @@ export async function POST(req: Request) {
       .padStart(2, "0")}.png`;
     const filePath = path.join(IMAGE_DIR, fileName);
 
-    // Save the image locally
+    // service switch
+    const uploadS3 = process.env.UPLOAD_S3_SWITCH?.toLowerCase() === "true";
+    const uploadSupabase =
+      process.env.UPLOAD_SUPABASE_SWITCH?.toLowerCase() === "true";
+
+    // Save image locally
     const buffer = Buffer.from(imageData, "base64");
     fs.writeFileSync(filePath, buffer);
-
-    // Return the public URL (adjust based on your hosting setup)
     const imagePath = `/images/${fileName}`;
 
     console.log(`Image saved as ${imagePath}`);
 
-    // upload to S3
-    const s3Img = await uploadImage(
-      fileName,
-      process.env.AWS_BUCKET || "ai-wallpaper-hoimingkenny",
-      `wallpapers/${fileName}`
-    );
+    // Upload the image to S3
+    let s3Img: any = null;
+    console.log("UPLOAD_TO_S3: ", uploadS3);
+    if (uploadS3) {
+      s3Img = await uploadImage(
+        fileName,
+        process.env.AWS_BUCKET || "ai-wallpaper-hoimingkenny",
+        `wallpapers/${fileName}`
+      );
+    }
+
+    // Insert to supabase
+    let wallpaper: Wallpaper | null = null;
+    console.log("UPLOAD_SUPABASE: ", uploadSupabase);
+    if (uploadSupabase) {
+      wallpaper = {
+        id: 1,
+        user_email: user_email,
+        img_description: description,
+        img_size: "1024x1024",
+        img_url: s3Img.Location,
+        llm_name: modelName,
+        created_at: new Date().toISOString(),
+      };
+
+      await insertWallpaper(wallpaper);
+    }
 
     return Response.json({
       code: 0,
-      message: "SUCCESS",
-      data: {
-        img_des: description,
-        img_path: imagePath,
-        s3_location: s3Img.Location,
-      },
+      message: "Image generated successfully",
+      data: wallpaper,
     });
   } catch (error) {
     console.error("Error:", error);
     return Response.json(
       {
-        code: 1,
+        code: -1,
         message: "Failed to generate image",
       },
       { status: 400 }

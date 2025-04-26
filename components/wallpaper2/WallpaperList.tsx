@@ -38,7 +38,7 @@ export default function ({ wallpapers }: Props) {
                                 </div>
                             </div>
                             <Image
-                                src={wallpapers.img_path}
+                                src={wallpapers.img_url}
                                 alt=""
                                 className="inline-block h-60 w-full rounded-md object-cover"
                                 width={500}
@@ -46,7 +46,7 @@ export default function ({ wallpapers }: Props) {
                             />
                             <div className="flex w-full flex-col items-start gap-5 p-0">
                                 <div>
-                                {wallpapers.img_des}
+                                {wallpapers.img_description}
                                 </div>
                             </div>
                         </div>
