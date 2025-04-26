@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 
 export function getGoogleGenAI() : GoogleGenAI{
     const client = new GoogleGenAI({
-        apiKey: "AIzaSyCnROUxxtmMeeliuefapEsuv_4Et44TDVI"
+        apiKey: process.env.GOOGLE_GENAI_API_KEY,
     })
     
     return client;

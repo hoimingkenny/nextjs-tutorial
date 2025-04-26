@@ -1,8 +1,8 @@
 import { Wallpaper } from "@/types/wallpaper";
-import { getDb} from "./db";
+import { getDb } from "./db";
 
 export async function insertWallpaper(wallpaper: Wallpaper) {
-  const db = getDb();
+  const db = await getDb();
   const res = await db.query(
     `INSERT INTO wallpapers 
           (user_email, img_description, img_size, img_url, llm_name, llm_params, created_at) 
@@ -35,7 +35,7 @@ export async function getWallpapers(
   }
   const offset = (page - 1) * limit;
 
-  const db = getDb();
+  const db = await getDb();
   const res = await db.query(`select * from wallpapers limit $1 offset $2`, [
     limit,
     offset,
@@ -67,7 +67,7 @@ export async function getWallpapers(
 export async function getUserWallpapersCount(
   user_email: string
 ): Promise<number> {
-  const db = getDb();
+  const db = await getDb();
   const res = await db.query(
     `SELECT count(1) as count FROM wallpapers WHERE user_email = $1`,
     [user_email]

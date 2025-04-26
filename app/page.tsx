@@ -13,7 +13,7 @@ export default function Home() {
   const [wallpapers, setWallpapers] = useState<Wallpaper[]>([]);
 
   const fetchWallpapers = async function () {
-    const result = await fetch("/api/gen-wallpapers");
+    const result = await fetch("/api/get-wallpapers");
     const { data } = await result.json();
 
     if (data) {
@@ -27,7 +27,7 @@ export default function Home() {
 
   return (
     <div className="w-screen h-screen">
-      <Header />
+      {/* <Header /> */}
       <Hero />
       <Input setWallpapers={setWallpapers} />
       <Wallpaper2 wallpapers={wallpapers} />

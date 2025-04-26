@@ -2,8 +2,9 @@ import { Pool } from "pg";
 
 let globalPool: Pool | undefined;
 
-export async function getDb(): Promise<Pool> {
+export async function getDb() {
   if (globalPool) {
+    console.log("Reusing existing PostgreSQL pool: true");
     return globalPool;
   }
 
@@ -11,7 +12,6 @@ export async function getDb(): Promise<Pool> {
   if (!connectionString) {
     throw new Error("DATABASE_URL environment variable is not set");
   }
-  console.log("connectionString", connectionString);
 
   globalPool = new Pool({
     connectionString,
@@ -20,7 +20,7 @@ export async function getDb(): Promise<Pool> {
   const client = await globalPool.connect();
   try {
     await client.query("SELECT NOW()");
-    console.log("Successfully connected to PostgreSQL database");
+    console.log(`Successfully connected to Supabase with connectionString: ${connectionString}`);
   } finally {
     client.release();
   }
